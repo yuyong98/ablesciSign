@@ -24,7 +24,7 @@ jobs:
 
     - name: Checkin
       run: |
-        python3 ./main.py    #要执行的py代码
+        python3 ./ablesci.py    #要执行的py代码
       env: #设置secrets的环境变量
         ABLESCICOOKIE: ${{ secrets.ABLESCICOOKIE }}
         XZKEY: ${{ secrets.XZKEY }}
