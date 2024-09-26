@@ -59,7 +59,7 @@ def ablesci_index(cookie):
 
 
 def cookies():
-    cookie = os.environ.get('ablesciCookie')
+    cookie = os.environ.get('ABLESCICOOKIE')
     cookie2 = cookie.split("\n")
     return cookie2
     

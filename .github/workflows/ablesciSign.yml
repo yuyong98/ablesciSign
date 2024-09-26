@@ -26,5 +26,5 @@ jobs:
       run: |
         python3 ./main.py    #要执行的py代码
       env: #设置secrets的环境变量
-        ablesciCookie: ${{ secrets.ablesciCookie }}
-        TOKEN: ${{ secrets.TOKEN }}
+        ABLESCICOOKIE: ${{ secrets.ABLESCICOOKIE }}
+        XZKEY: ${{ secrets.XZKEY }}
