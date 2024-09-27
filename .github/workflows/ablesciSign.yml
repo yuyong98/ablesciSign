@@ -29,5 +29,3 @@ jobs:
       env: #设置secrets的环境变量
         ABLESCICOOKIE: ${{ secrets.ABLESCICOOKIE }}
         XZKEY: ${{ secrets.XZKEY }}  # 息知的XZKEY; secrets可填
-        SCKEY: ${{ secrets.SCKEY }}  # Server酱的SCKEY; secrets可填
-        PUSH_PLUS_TOKEN: ${{ PUSH_PLUS_TOKEN }} # 微信推送Plus+
