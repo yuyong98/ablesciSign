@@ -1,4 +1,6 @@
 #!/usr/bin/env python
+# cron:40 7,21 * * *
+# new Env("ABLESCICOOKIE ")
 # coding=utf-8
 import requests
 import os
