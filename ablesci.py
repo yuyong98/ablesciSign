@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # cron:40 7,21 * * *
-# new Env("ABLESCICOOKIE ")
+# new Env("科研通签到")
 # coding=utf-8
 import requests
 import os
