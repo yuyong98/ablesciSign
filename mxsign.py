@@ -36,25 +36,16 @@ def mx(cookie):
     if response.status_code == 200:
         print("成功访问")
     return response.json()
-
-
-def cookies():
-    cookie = os.environ.get('MXCOOKIE')
-    return cookie
     
 if __name__ == "__main__":
     content = "==========================\n"
-    for cookie1 in cookies():
-        interval = random.uniform(0, 60)
-        msg =  mx(cookie1)
-        time.sleep(interval)
-        content += "今日MX签到: \n" + msg['msg'] + "\n"
-        code = msg['code']
-        if code == 0:
-          print("签到成功")
-        else :
-          print("签到失败")
-        time.sleep(interval)
+    cookie = os.environ.get('MXCOOKIE')
+    interval = random.uniform(0, 60)
+    msg =  mx(cookie1)
+    print(msg)
+    time.sleep(interval)
+   # content += "今日MX签到: \n" + msg['msg'] + "\n"
+    code = msg['code']
     content += "=========================="
     print(content)
     send("MX签到", content)
