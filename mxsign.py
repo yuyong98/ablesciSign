@@ -40,8 +40,7 @@ def ablesci(cookie):
 
 def cookies():
     cookie = os.environ.get('MXCOOKIE')
-    cookie2 = cookie.split("\n")
-    return cookie2
+    return cookie
     
 if __name__ == "__main__":
     content = "==========================\n"
