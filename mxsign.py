@@ -41,7 +41,7 @@ if __name__ == "__main__":
     content = "==========================\n"
     cookie = os.environ.get('MXCOOKIE')
     interval = random.uniform(0, 60)
-    msg =  mx(cookie1)
+    msg =  mx(cookie)
     print(msg)
     time.sleep(interval)
    # content += "今日MX签到: \n" + msg['msg'] + "\n"
