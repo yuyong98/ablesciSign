@@ -51,7 +51,7 @@ if __name__ == "__main__":
         content += "今日MX签到: \n" + msg['msg'] + "\n"
         code = msg['code']
         if code == 0:
-         # content += msg['data']['today_history'] + "\n"
+          print("签到成功")
         else :
           print("签到失败")
         time.sleep(interval)
