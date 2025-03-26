@@ -9,7 +9,7 @@ import re
 import random
 import time
 
-def ablesci(cookie):
+def mx(cookie):
     url = "https://mox.moxing.app/forum/sign"
     headers = {
         'accept': 'text/html, application/xhtml+xml',
@@ -30,7 +30,7 @@ def ablesci(cookie):
         'x-requested-with': 'XMLHttpRequest',
         'x-xsrf-token': 'eyJpdiI6Ik1pVnhBZ1c3LzFUMTVWalpWeVIvb3c9PSIsInZhbHVlIjoiSFNXakgrNUh2M1krVkNXQ3N2ZFlQd1ZkMDZtUjhKQXg2U3dtbHRrdjZlRkZxb3VrM1dPL0I0T1VTckpqbEE5UlF1N1pCNVU1SjB6L1gyekg0VElFLzcrTXdoTEU4U3lDbktSK2h2SGJZUVBReEZsamZsbHVxU25yZXNmTXQ2QWoiLCJtYWMiOiJiZDE3YjBmYzM4ZDllMDg4Mjk1MmZjMDk1MDEyZGJmZmU5MjY2M2E2ZDJkY2E3MWQ3OGRmM2FlNTM3NGJhOGRkIiwidGFnIjoiIn0=',
         # Requests sorts cookies= alphabetically
-        # 'cookie': '',
+        'cookie': cookie,
     }
     response = requests.get(url,headers=headers)
     if response.status_code == 200:
@@ -46,7 +46,7 @@ if __name__ == "__main__":
     content = "==========================\n"
     for cookie1 in cookies():
         interval = random.uniform(0, 60)
-        msg =  ablesci(cookie1)
+        msg =  mx(cookie1)
         time.sleep(interval)
         content += "今日MX签到: \n" + msg['msg'] + "\n"
         code = msg['code']
