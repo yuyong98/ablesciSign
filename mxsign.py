@@ -44,8 +44,8 @@ if __name__ == "__main__":
     msg =  mx(cookie)
     print(msg)
     time.sleep(interval)
-   # content += "今日MX签到: \n" + msg['msg'] + "\n"
-    code = msg['code']
+   #  content += "今日MX签到: \n" + msg['msg'] + "\n"
+   #  code = msg['code']
     content += "=========================="
     print(content)
     send("MX签到", content)
