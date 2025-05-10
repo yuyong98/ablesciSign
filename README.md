@@ -188,6 +188,53 @@ security_session_verify=值; other_cookie=值  # 不带前缀格式
 
 ## 3. 获取推送secrets
 
+支持以下推送方式配置（任选一种即可）：
+
+### 推送方式列表
+1. **息知推送**  
+   环境变量：`XZKEY`  
+   获取地址：[https://xz.qqoq.net](https://xz.qqoq.net)
+
+2. **Server酱**  
+   环境变量：`SCKEY`  
+   获取地址：[https://sct.ftqq.com](https://sct.ftqq.com)
+
+3. **Bark推送**  
+   环境变量：`BARK` (官方服务器) 或 `BARK_PUSH` (自建服务器)
+
+4. **Telegram机器人**  
+   环境变量：  
+   `TG_BOT_TOKEN` + `TG_USER_ID`  
+   [创建机器人教程](https://core.telegram.org/bots#6-botfather)
+
+5. **钉钉机器人**  
+   环境变量：  
+   `DD_BOT_ACCESS_TOKEN` + `DD_BOT_SECRET`  
+   [创建指南](https://open.dingtalk.com/document/orgapp/custom-robot-access)
+
+6. **微信推送Plus+**  
+   环境变量：`PUSH_PLUS_TOKEN`  
+   [官网](http://pushplus.hxtrip.com)
+
+7. **企业微信**  
+   环境变量：`QYWX_AM` (应用消息) 或 `QYWX_KEY` (群机器人)
+
+8. **QQ机器人**  
+   环境变量：`QQ_SKEY` + `QQ_MODE`  
+   [Cool Push文档](https://cp.xuthus.cc)
+
+### 通用配置规则
+1. 在GitHub Actions或青龙面板中创建同名的环境变量
+2. 多个推送方式可同时配置，系统会自动选择可用方式
+3. 推送密钥格式示例：
+```
+# GitHub Secrets格式示例
+SCKEY=SCT123456
+XZKEY=XYZ789
+TG_BOT_TOKEN=123456:ABC-DEF1234
+TG_USER_ID=987654321
+```
+
 打开[息知](https://xz.qqoq.net/#/index) 网站首页: https://xz.qqoq.net/#/index
 
 ```bash
