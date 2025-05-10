@@ -12,6 +12,7 @@
       - [1.1.4.在自己Fork的项目中启用Actions](#114在自己fork的项目中启用actions)
       - [1.1.5.配置环境变量](#115配置环境变量)
         - [1.1.5.1 多Cookie配置：](#1151-多cookie配置)
+        - [1.1.5.2.推送服务配置](#1152推送服务配置)
         - [1.1.5.2.添加科研通cookie和推送服务secrets(以息知为例)](#1152添加科研通cookie和推送服务secrets以息知为例)
       - [1.1.6.运行Actions](#116运行actions)
         - [1.1.6.1运行成功时，息知推送提醒](#1161运行成功时息知推送提醒)
@@ -66,24 +67,27 @@
 
 ###### 1.1.5.1 多Cookie配置：
 ```bash
-# 标准格式（推荐）
-security_session_verify=你的完整cookie内容
+# 标准格式（需包含完整cookie键值对）
+你的完整cookie1内容
+你的完整cookie1内容
+# 备用格式（自动识别cookie数字前缀）
+cookie1=值;
+cookie2=另一个值;
+```
+环境变量`ABLESCICOOKIE`解析规则：
+1. 支持两种格式：
+   - `cookie数字=`前缀格式（自动去除前缀）
+   - 原始cookie格式
+2. 多个配置间用换行分隔
+3. 无效条目自动跳过并记录警告日志
 
-# 备用格式
-cookie1=另一个完整cookie内容 
+###### 1.1.5.2.推送服务配置
 ```
-环境变量`ABLESCICOOKIE`支持多种cookie配置格式：
+# 推送服务配置（任选一种）
+SCKEY=你的Server酱密钥
+BARK=你的Bark设备密钥
+PUSH_PLUS_TOKEN=你的PushPlus+令牌
 ```
-cookie1=你的完整cookie内容
-cookie2=另一个完整cookie内容
-security_session_verify=值; other_cookie=值  # 不带前缀格式
-```
-注意事项：
-1. 支持两种格式：`cookie数字=`前缀格式和原始cookie格式
-2. 实际cookie内容不需要包含`cookie1`前缀标识
-3. 无效格式的条目会被自动跳过并记录警告日志
-4. 多个cookie之间用换行符分隔
-
 ![image-20240926213843274](./img/image-20240926213843274.png)
 
 ![image-20240926213937401](./img/image-20240926213937401.png)
@@ -254,6 +258,7 @@ XZKEY=XYZ789
 TG_BOT_TOKEN=123456:ABC-DEF1234
 TG_USER_ID=987654321
 ```
+**以下以息知为例**
 
 打开[息知](https://xz.qqoq.net/#/index) 网站首页: https://xz.qqoq.net/#/index
 
