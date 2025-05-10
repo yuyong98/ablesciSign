@@ -56,6 +56,19 @@
 
 ##### 1.1.5.配置环境变量
 
+### 多Cookie配置格式：
+环境变量`ABLESCICOOKIE`支持多种cookie配置格式：
+```
+cookie1=你的完整cookie内容
+cookie2=另一个完整cookie内容
+security_session_verify=值; other_cookie=值  # 不带前缀格式
+```
+注意事项：
+1. 支持两种格式：`cookie数字=`前缀格式和原始cookie格式
+2. 实际cookie内容不需要包含`cookie1`前缀标识
+3. 无效格式的条目会被自动跳过并记录警告日志
+4. 多个cookie之间用换行符分隔
+
 ![image-20240926213843274](./img/image-20240926213843274.png)
 
 ![image-20240926213937401](./img/image-20240926213937401.png)
@@ -186,3 +199,17 @@ https://xizhi.qqoq.net/{key}.send?title=标题&content=内容
 扫码登录 
 
 ![image-20240926215346889](./img/image-20240926215346889.png)
+
+## 许可证
+
+本项目采用 MIT 许可证。
+
+## 微信公众号：
+
+![gzh](./img/gzh.jpg)
+
+## 赞赏
+
+感觉不错的请我喝瓶快乐水 😁
+
+![skm](./img/skm.jpg)
