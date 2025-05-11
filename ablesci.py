@@ -11,19 +11,39 @@ import re
 import random
 import time
 from typing import Optional, Dict, Any, List, Iterator
+from cachetools import cached, TTLCache
+import datetime
 
 
 def get_headers(cookie: str) -> Dict[str, str]:
-    # 浏览器UA池（包含最新Chrome/Edge/Firefox的移动端和桌面端UA）
-    browser_pool = [
-        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36',
-        'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36',
-        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36',  # 修正重复的Edge UA
-        'Mozilla/5.0 (iPhone; CPU iPhone OS 17_4_1 like Mac OS X) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Mobile/15E148 Safari/537.36'
-    ]
+    # 动态生成最新浏览器UA
+    def generate_user_agent(platform: str) -> str:
+        # 生成随机版本号（主版本从120到125，保持更新）
+        major_version = random.randint(120, 125)
+        minor_version = random.randint(0, 10)
+        build_version = random.randint(2000, 9999)
+        
+        # 桌面端UA模板
+        desktop_templates = [
+            f'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/{major_version}.0.{minor_version}.{build_version} Safari/537.36',
+            f'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:{major_version}.0) Gecko/20100101 Firefox/{major_version}.0',
+            f'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/{major_version}.0.0.0 Safari/537.36 Edg/{major_version}.0.{minor_version}.{build_version}'
+        ]
+        
+        # 移动端UA模板
+        mobile_templates = [
+            f'Mozilla/5.0 (iPhone; CPU iPhone OS 17_{random.randint(1,5)} like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.4 Mobile/15E148 Safari/604.1',
+            f'Mozilla/5.0 (Linux; Android 13; SM-G991B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/{major_version}.0.0.0 Mobile Safari/537.36'
+        ]
+        
+        # 根据平台选择模板
+        if platform == 'desktop':
+            return random.choice(desktop_templates)
+        return random.choice(mobile_templates)
     
-    # 随机选择UA并提取浏览器版本
-    user_agent = random.choice(browser_pool)
+    # 随机选择平台类型
+    is_mobile = random.choice([True, False])
+    user_agent = generate_user_agent('mobile' if is_mobile else 'desktop')
     
     # 带异常处理的版本提取
     try:
@@ -146,6 +166,42 @@ def cookies() -> Iterator[str]:
             yield match.group(2).strip() if match.group(2) else match.group(1).strip()
         else:
             logging.warning(f"Invalid cookie format: {entry}")
+
+
+def generate_interval(base: float = 60.0) -> float:
+    return random.uniform(0, base)
+
+
+# 缓存配置（1小时更新）
+ua_cache = TTLCache(maxsize=100, ttl=3600)
+
+@cached(ua_cache)
+def generate_user_agent(platform: str) -> str:
+    # 生成随机版本号（主版本从120到最新）
+    current_year = datetime.datetime.now().year
+    major_version = random.randint(120, current_year - 2010 + 120)
+    # 增加Firefox和Edge版本生成
+    browser_type = random.choice(['chrome', 'firefox', 'edge'])
+    
+    # 动态模板库
+    templates = {
+        'desktop': {
+            'chrome': f'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/{major_version}.0.0.0 Safari/537.36',
+            'firefox': f'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:{major_version}.0) Gecko/20100101 Firefox/{major_version}.0',
+            'edge': f'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/{major_version}.0.0.0 Safari/537.36 Edg/{major_version}.0.0.0'
+        },
+        'mobile': {
+            'chrome': f'Mozilla/5.0 (Linux; Android 13; SM-G991B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/{major_version}.0.0.0 Mobile Safari/537.36',
+            'firefox': f'Mozilla/5.0 (Android 13; Mobile; rv:{major_version}.0) Gecko/{major_version}.0 Firefox/{major_version}.0',
+            'edge': f'Mozilla/5.0 (Linux; Android 13) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/{major_version}.0.0.0 Mobile Safari/537.36 EdgA/{major_version}.0.0.0'
+        }
+    }
+    
+    try:
+        return templates[platform][browser_type]
+    except Exception as e:
+        print(f"UA生成失败: {str(e)}")
+        return 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36'
 
 
 def generate_interval(base: float = 60.0) -> float:
