@@ -18,14 +18,25 @@ def get_headers(cookie: str) -> Dict[str, str]:
     browser_pool = [
         'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36',
         'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36',
-        'Mozilla/5.0 (Windows NT 10.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36 Edge/44.19041',
-        'Mozilla/5.0 (iPhone; CPU iPhone OS 17_4_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 EdgiOS/125.0.0.0 Mobile/15E148 Safari/605.1.15'
+        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36',  # 修正重复的Edge UA
+        'Mozilla/5.0 (iPhone; CPU iPhone OS 17_4_1 like Mac OS X) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Mobile/15E148 Safari/537.36'
     ]
     
     # 随机选择UA并提取浏览器版本
     user_agent = random.choice(browser_pool)
-    chrome_version = re.search(r'Chrome/(\d+\.\d+\.\d+\.\d+)', user_agent).group(1)
-    edge_version = chrome_version.split('.')[0] + '.0.0.0'  # Edge版本跟随Chromium主版本
+    
+    # 带异常处理的版本提取
+    try:
+        chrome_match = re.search(r'Chrome/(\d+\.\d+\.\d+\.\d+)', user_agent)
+        chrome_version = chrome_match.group(1) if chrome_match else '125.0.0.0'
+        # 同步Edge版本处理
+        edge_match = re.search(r'Edg/(\d+\.\d+\.\d+\.\d+)', user_agent)
+        edge_version = edge_match.group(1) if edge_match else f'{chrome_version.split(".")[0]}.0.0.0'
+    except Exception as e:
+        print(f"Chrome版本提取失败: {str(e)}")
+        chrome_version = '125.0.0.0'
+    
+    edge_version = chrome_version.split('.')[0] + '.0.0.0'  # 统一使用Chrome主版本
     
     # 生成随机XFF头
     x_forwarded_for = f'{random.randint(60, 220)}.{random.randint(1, 255)}.{random.randint(1, 255)}.{random.randint(1, 255)}'
