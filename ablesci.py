@@ -14,22 +14,48 @@ from typing import Optional, Dict, Any, List, Iterator
 
 
 def get_headers(cookie: str) -> Dict[str, str]:
-    return {
+    # 浏览器UA池（包含最新Chrome/Edge/Firefox的移动端和桌面端UA）
+    browser_pool = [
+        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36',
+        'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36',
+        'Mozilla/5.0 (Windows NT 10.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36 Edge/44.19041',
+        'Mozilla/5.0 (iPhone; CPU iPhone OS 17_4_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 EdgiOS/125.0.0.0 Mobile/15E148 Safari/605.1.15'
+    ]
+    
+    # 随机选择UA并提取浏览器版本
+    user_agent = random.choice(browser_pool)
+    chrome_version = re.search(r'Chrome/(\d+\.\d+\.\d+\.\d+)', user_agent).group(1)
+    edge_version = chrome_version.split('.')[0] + '.0.0.0'  # Edge版本跟随Chromium主版本
+    
+    # 生成随机XFF头
+    x_forwarded_for = f'{random.randint(60, 220)}.{random.randint(1, 255)}.{random.randint(1, 255)}.{random.randint(1, 255)}'
+    
+    headers = {
+        'authority': 'www.ablesci.com',
         'accept': 'application/json, text/javascript, */*; q=0.01',
         'accept-language': 'zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6',
+        'cache-control': 'no-cache',
         'cookie': cookie,
-        'dnt': '1',
-        'priority': 'u=1, i',
+        'dnt': str(random.randint(0, 1)),  # 随机DNT标识
+        'pragma': 'no-cache',
         'referer': 'https://www.ablesci.com/',
-        'sec-ch-ua': '"Chromium";v="124", "Microsoft Edge";v="124", "Not-A.Brand";v="99"',
+        'sec-ch-ua': f'"Chromium";v="{chrome_version.split(".")[0]}", "Microsoft Edge";v="{edge_version.split(".")[0]}", "Not-A.Brand";v="99"',
         'sec-ch-ua-mobile': '?0',
-        'sec-ch-ua-platform': '"Windows"',
+        'sec-ch-ua-platform': '["Windows", "Linux", "macOS"][random.randint(0,2)]',
         'sec-fetch-dest': 'empty',
         'sec-fetch-mode': 'cors',
         'sec-fetch-site': 'same-origin',
-        'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36 Edg/124.0.0.0',
+        'user-agent': user_agent,
         'x-requested-with': 'XMLHttpRequest',
+        'x-forwarded-for': x_forwarded_for,
+        'x-real-ip': x_forwarded_for
     }
+    
+    # 随机化headers顺序
+    keys = list(headers.keys())
+    random.shuffle(keys)
+    
+    return {k: headers[k] for k in keys}
 
 
 def create_session(retries: int = 3) -> requests.Session:
