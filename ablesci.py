@@ -6,14 +6,20 @@ import requests
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
 import os
-from sendNotify import send
 import re
 import random
 import time
-from typing import Optional, Dict, Any, List, Iterator
-from cachetools import cached, TTLCache
 import datetime
 import json
+from typing import Optional, Dict, Any, List, Iterator
+
+import requests
+from requests.adapters import HTTPAdapter
+from urllib3.util.retry import Retry
+from cachetools import cached, TTLCache
+
+from sendNotify import send
+
 
 def generate_interval() -> float:
     """生成1-5秒随机请求间隔"""
@@ -21,14 +27,9 @@ def generate_interval() -> float:
 
 
 def get_headers(cookie: str) -> Dict[str, str]:
-    # 动态生成最新浏览器UA
-
-    
-    # 随机选择平台类型
     is_mobile = random.choice([True, False])
     user_agent = generate_user_agent('mobile' if is_mobile else 'desktop')
-    
-    # 带异常处理的版本提取
+
     try:
         chrome_match = re.search(r'Chrome/(\d+\.\d+\.\d+\.\d+)', user_agent)
         chrome_version = chrome_match.group(1) if chrome_match else '125.0.0.0'
@@ -38,12 +39,12 @@ def get_headers(cookie: str) -> Dict[str, str]:
     except Exception as e:
         print(f"Chrome版本提取失败: {str(e)}")
         chrome_version = '125.0.0.0'
-    
+
     edge_version = chrome_version.split('.')[0] + '.0.0.0'  # 统一使用Chrome主版本
-    
+
     # 生成随机XFF头
     x_forwarded_for = f'{random.randint(60, 220)}.{random.randint(1, 255)}.{random.randint(1, 255)}.{random.randint(1, 255)}'
-    
+
     headers = {
         'authority': 'www.ablesci.com',
         'accept': 'application/json, text/javascript, */*; q=0.01',
@@ -174,7 +175,18 @@ ua_cache = TTLCache(maxsize=100, ttl=3600)
 
 @cached(ua_cache)
 def generate_user_agent(platform: str) -> str:
-    # 统一UA生成逻辑（优化版）
+    templates = {
+        "desktop": {
+            "chrome": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/{major_version}.0.0.0 Safari/537.36",
+            "firefox": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:{major_version}.0) Gecko/20100101 Firefox/{major_version}.0",
+            "edge": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/{major_version}.0.0.0 Safari/537.36 Edg/{major_version}.0.0.0"
+        },
+        "mobile": {
+            "chrome": "Mozilla/5.0 (Linux; Android 13; SM-G991B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/{major_version}.0.0.0 Mobile Safari/537.36",
+            "firefox": "Mozilla/5.0 (Android 13; Mobile; rv:{major_version}.0) Gecko/{major_version}.0 Firefox/{major_version}.0",
+            "edge": "Mozilla/5.0 (Linux; Android 13) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/{major_version}.0.0.0 Mobile Safari/537.36 EdgA/{major_version}.0.0.0"
+        }
+    }
     try:
         current_year = datetime.datetime.now().year
         major_version = random.randint(120, current_year - 2010 + 120)
