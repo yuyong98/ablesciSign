@@ -2,6 +2,7 @@
 # cron:40 7,21 * * *
 # new Env("科研通签到")
 # coding=utf-8
+
 # 标准库导入
 import os
 import re
@@ -23,6 +24,74 @@ from sendNotify import send  # 消息通知模块
 def generate_interval() -> float:
     """生成1-5秒随机请求间隔"""
     return random.uniform(1, 5)
+
+# 缓存配置（1小时更新）
+ua_cache = TTLCache(maxsize=100, ttl=3600)
+
+@cached(ua_cache)
+def generate_user_agent(platform: str) -> str:
+    """
+    生成随机用户代理字符串(User-Agent)
+
+    功能特性:
+    - 支持生成桌面版/移动版双平台UA头
+    - 动态生成Chrome主版本号（基于当前年份计算）
+    - 支持Chrome/Firefox/Edge三大浏览器类型
+    - 内置1小时缓存机制避免重复生成
+
+    参数:
+        platform (str): 平台类型，'desktop' 或 'mobile'
+
+    返回值:
+        str: 符合现代浏览器特征的随机User-Agent字符串
+
+    实现细节:
+        1. Chrome版本号生成规则:
+           - 基准版本: 120
+           - 动态增量: (当前年份 - 2010)
+           - 最终版本范围: 120 ~ (当前年份 - 2010 + 120)
+        2. 浏览器类型随机选择Chrome/Firefox/Edge
+        3. 使用TTLCache实现1小时缓存，避免频繁生成
+
+    异常处理:
+        - 捕获所有异常并返回备用UA
+        - 打印异常信息便于调试
+    """
+    templates = {
+        "desktop": {
+            "chrome": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/{major_version}.0.0.0 Safari/537.36",
+            "firefox": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:{major_version}.0) Gecko/20100101 Firefox/{major_version}.0",
+            "edge": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/{major_version}.0.0.0 Safari/537.36 Edg/{major_version}.0.0.0"
+        },
+        "mobile": {
+            "chrome": "Mozilla/5.0 (Linux; Android 13; SM-G991B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/{major_version}.0.0.0 Mobile Safari/537.36",
+            "firefox": "Mozilla/5.0 (Android 13; Mobile; rv:{major_version}.0) Gecko/{major_version}.0 Firefox/{major_version}.0",
+            "edge": "Mozilla/5.0 (Linux; Android 13) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/{major_version}.0.0.0 Mobile Safari/537.36 EdgA/{major_version}.0.0.0"
+        }
+    }
+    try:
+        current_year = datetime.datetime.now().year
+        major_version = random.randint(120, current_year - 2010 + 120)
+        
+        templates = {
+            'desktop': {
+                'chrome': f'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/{major_version}.0.0.0 Safari/537.36',
+                'firefox': f'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:{major_version}.0) Gecko/20100101 Firefox/{major_version}.0',
+                'edge': f'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/{major_version}.0.0.0 Safari/537.36 Edg/{major_version}.0.0.0'
+            },
+            'mobile': {
+                'chrome': f'Mozilla/5.0 (Linux; Android 13; SM-G991B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/{major_version}.0.0.0 Mobile Safari/537.36',
+                'firefox': f'Mozilla/5.0 (Android 13; Mobile; rv:{major_version}.0) Gecko/{major_version}.0 Firefox/{major_version}.0',
+                'edge': f'Mozilla/5.0 (Linux; Android 13) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/{major_version}.0.0.0 Mobile Safari/537.36 EdgA/{major_version}.0.0.0'
+            }
+        }
+        
+        browser_type = random.choice(['chrome', 'firefox', 'edge'])
+        return templates[platform][browser_type]
+    except Exception as e:
+        print(f"UA生成异常: {str(e)}")
+        return 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36'
+
 
 
 def get_headers(cookie: str) -> Dict[str, str]:
@@ -173,76 +242,6 @@ def cookies() -> Iterator[str]:
             print(f"[警告] Cookie格式错误: {entry}")
 
 
-
-
-
-# 缓存配置（1小时更新）
-ua_cache = TTLCache(maxsize=100, ttl=3600)
-
-@cached(ua_cache)
-def generate_user_agent(platform: str) -> str:
-    """
-    生成随机用户代理字符串(User-Agent)
-
-    功能特性:
-    - 支持生成桌面版/移动版双平台UA头
-    - 动态生成Chrome主版本号（基于当前年份计算）
-    - 支持Chrome/Firefox/Edge三大浏览器类型
-    - 内置1小时缓存机制避免重复生成
-
-    参数:
-        platform (str): 平台类型，'desktop' 或 'mobile'
-
-    返回值:
-        str: 符合现代浏览器特征的随机User-Agent字符串
-
-    实现细节:
-        1. Chrome版本号生成规则:
-           - 基准版本: 120
-           - 动态增量: (当前年份 - 2010)
-           - 最终版本范围: 120 ~ (当前年份 - 2010 + 120)
-        2. 浏览器类型随机选择Chrome/Firefox/Edge
-        3. 使用TTLCache实现1小时缓存，避免频繁生成
-
-    异常处理:
-        - 捕获所有异常并返回备用UA
-        - 打印异常信息便于调试
-    """
-    templates = {
-        "desktop": {
-            "chrome": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/{major_version}.0.0.0 Safari/537.36",
-            "firefox": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:{major_version}.0) Gecko/20100101 Firefox/{major_version}.0",
-            "edge": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/{major_version}.0.0.0 Safari/537.36 Edg/{major_version}.0.0.0"
-        },
-        "mobile": {
-            "chrome": "Mozilla/5.0 (Linux; Android 13; SM-G991B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/{major_version}.0.0.0 Mobile Safari/537.36",
-            "firefox": "Mozilla/5.0 (Android 13; Mobile; rv:{major_version}.0) Gecko/{major_version}.0 Firefox/{major_version}.0",
-            "edge": "Mozilla/5.0 (Linux; Android 13) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/{major_version}.0.0.0 Mobile Safari/537.36 EdgA/{major_version}.0.0.0"
-        }
-    }
-    try:
-        current_year = datetime.datetime.now().year
-        major_version = random.randint(120, current_year - 2010 + 120)
-        
-        templates = {
-            'desktop': {
-                'chrome': f'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/{major_version}.0.0.0 Safari/537.36',
-                'firefox': f'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:{major_version}.0) Gecko/20100101 Firefox/{major_version}.0',
-                'edge': f'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/{major_version}.0.0.0 Safari/537.36 Edg/{major_version}.0.0.0'
-            },
-            'mobile': {
-                'chrome': f'Mozilla/5.0 (Linux; Android 13; SM-G991B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/{major_version}.0.0.0 Mobile Safari/537.36',
-                'firefox': f'Mozilla/5.0 (Android 13; Mobile; rv:{major_version}.0) Gecko/{major_version}.0 Firefox/{major_version}.0',
-                'edge': f'Mozilla/5.0 (Linux; Android 13) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/{major_version}.0.0.0 Mobile Safari/537.36 EdgA/{major_version}.0.0.0'
-            }
-        }
-        
-        browser_type = random.choice(['chrome', 'firefox', 'edge'])
-        return templates[platform][browser_type]
-    except Exception as e:
-        print(f"UA生成异常: {str(e)}")
-        return 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36'
-
 def extract_chinese(html_content: str) -> str:
     """
     从HTML内容提取中文字段
@@ -279,7 +278,6 @@ def extract_chinese(html_content: str) -> str:
     except Exception as e:
         print(f'处理失败：{str(e)}')
         return ''
-
 
 
 if __name__ == "__main__":
