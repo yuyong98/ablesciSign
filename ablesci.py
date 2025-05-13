@@ -150,8 +150,10 @@ def cookies() -> Iterator[str]:
     - 无效条目会记录warning级别日志
     """
     import re
-    import logging
     cookie_env = os.environ.get('ABLESCICOOKIE', '')
+    if not cookie_env.strip():
+        print("\033[31m[严重错误] 环境变量ABLESCICOOKIE未设置或为空！\033[0m")
+        return
     cookies = cookie_env.splitlines()
     pattern = re.compile(r'^(cookie\d+=)?(.+?)$', re.MULTILINE)
     
@@ -164,7 +166,7 @@ def cookies() -> Iterator[str]:
             # 提取分组2的内容（原始cookie）或分组1（无前缀时整个匹配）
             yield match.group(2).strip() if match.group(2) else match.group(1).strip()
         else:
-            logging.warning(f"Invalid cookie format: {entry}")
+            print(f"[警告] Cookie格式错误: {entry}")
 
 
 
@@ -216,9 +218,11 @@ def generate_user_agent(platform: str) -> str:
 
 if __name__ == "__main__":
     content = "="*26 + "\n"
+    cookies_found = False
     for cookie in cookies():
         if not cookie:
             continue
+        cookies_found = True
 
         interval = generate_interval()
         time.sleep(interval)
@@ -235,6 +239,9 @@ if __name__ == "__main__":
 
         time.sleep(interval)
 
+    if not cookies_found:
+        content += "\033[31m[错误] 未找到任何有效的cookie配置，请检查环境变量ABLESCICOOKIE是否正确设置\033[0m\n"
+    
     content += "="*26
     print(content)
     send("科研通签到", content)
