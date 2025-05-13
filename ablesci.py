@@ -119,19 +119,26 @@ def cookies() -> Iterator[str]:
     从环境变量解析科研通多账号cookie配置
 
     环境变量要求:
-    - 使用ABLESCICOOKIE环境变量存储多个cookie
-    - 支持两种格式：
-        1. cookie数字=真实cookie内容（如cookie1=x1234...）
-        2. 原始cookie格式（如security_session_verify=值; other_cookie=值）
-    - 多个配置间用换行符分隔
+    - 必须设置ABLESCICOOKIE环境变量
+    - 支持两种格式（可混合使用）：
+        1. 带前缀格式：cookie数字=真实cookie内容（如cookie1=security_session_verify=xxx）
+        2. 原始格式：完整cookie字符串（如security_session_verify=xxx; other_cookie=yyy）
+    - 多个账号配置需用换行符分隔
+
+    解析规则:
+    - 使用正则表达式r'^(cookie\\d+=)?(.+?)$'匹配条目
+    - 分组1捕获前缀（可选），分组2捕获实际cookie内容
+    - 自动去除两端空白字符，跳过空行
+    - 支持包含等号(=)和分号(;)的复杂cookie格式
 
     返回值:
-        Iterator[str]: 生成器，逐个返回有效cookie字符串
+        Iterator[str]: 生成器，按顺序返回解析后的有效cookie字符串
 
     异常处理:
-    - 自动跳过空行和无效格式条目
-    - 使用正则表达式r'^(cookie\\d+=)?(.+?)$'匹配带前缀和不带前缀的cookie
-    - 无效条目会记录warning级别日志
+    - 环境变量未设置时输出红色错误信息
+    - 格式错误条目会记录警告日志并跳过
+    - 自动过滤包含非法字符或结构错误的条目
+    - 返回的cookie字符串已去除两端空白字符
     """
     cookie_env = os.environ.get('ABLESCICOOKIE', '')
     if not cookie_env.strip():
