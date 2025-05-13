@@ -73,6 +73,20 @@ def get_headers(cookie: str) -> Dict[str, str]:
 
 
 def create_session(retries: int = 3) -> requests.Session:
+    """
+    创建带重试机制的HTTP会话
+
+    参数:
+        retries: 最大重试次数，默认3次
+
+    特性:
+        - 对500/502/503/504状态码自动重试
+        - 使用指数退避策略（退避因子0.5）
+        - 适配HTTP/HTTPS协议
+
+    返回:
+        requests.Session: 配置好的会话对象
+    """
     session = requests.Session()
     retry = Retry(
         total=retries,
@@ -167,6 +181,33 @@ ua_cache = TTLCache(maxsize=100, ttl=3600)
 
 @cached(ua_cache)
 def generate_user_agent(platform: str) -> str:
+    """
+    生成随机用户代理字符串(User-Agent)
+
+    功能特性:
+    - 支持生成桌面版/移动版双平台UA头
+    - 动态生成Chrome主版本号（基于当前年份计算）
+    - 支持Chrome/Firefox/Edge三大浏览器类型
+    - 内置1小时缓存机制避免重复生成
+
+    参数:
+        platform (str): 平台类型，'desktop' 或 'mobile'
+
+    返回值:
+        str: 符合现代浏览器特征的随机User-Agent字符串
+
+    实现细节:
+        1. Chrome版本号生成规则:
+           - 基准版本: 120
+           - 动态增量: (当前年份 - 2010)
+           - 最终版本范围: 120 ~ (当前年份 - 2010 + 120)
+        2. 浏览器类型随机选择Chrome/Firefox/Edge
+        3. 使用TTLCache实现1小时缓存，避免频繁生成
+
+    异常处理:
+        - 捕获所有异常并返回备用UA
+        - 打印异常信息便于调试
+    """
     templates = {
         "desktop": {
             "chrome": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/{major_version}.0.0.0 Safari/537.36",
@@ -203,6 +244,24 @@ def generate_user_agent(platform: str) -> str:
         return 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36'
 
 def extract_chinese(html_content: str) -> str:
+    """
+    从HTML内容提取中文字段
+
+    参数:
+        html_content: 原始HTML字符串
+
+    处理流程:
+        1. 匹配所有<p>和<div>标签内容
+        2. 清除残留HTML标签
+        3. 保留中文字符、数字及常用标点（，。！？等）
+        4. 过滤空段落并用换行符连接
+
+    返回:
+        str: 整理后的纯文本内容，段落间用换行分隔
+
+    异常:
+        返回空字符串并打印错误日志
+    """
     try:  
         # 匹配所有<p>标签内容
         paragraphs = re.findall(r'<(?:p|div)[^>]*>(.*?)</(?:p|div)>', html_content, flags=re.IGNORECASE | re.DOTALL)
