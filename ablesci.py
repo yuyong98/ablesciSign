@@ -212,7 +212,21 @@ def generate_user_agent(platform: str) -> str:
         print(f"UA生成异常: {str(e)}")
         return 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36'
 
-
+def extract_chinese(html_content: str) -> str:
+    try:
+        # 复用ablesci.py中的HTML清洗正则表达式
+        clean_text = re.sub(r'<[^>]+>', '', html_content)
+        
+        # 匹配中文字符（包含标点）
+        chinese_pattern = re.compile(r'[\u4e00-\u9fa5，。！？；：、（）《》【】「」“”‘’—…]+')
+        chinese_text = ''.join(chinese_pattern.findall(clean_text))
+        # 新增替换逻辑
+        chinese_text = re.sub(r'查看完整介绍[，。！？；：、]*', '...', chinese_text)
+        return chinese_text
+    
+    except Exception as e:
+        print(f'处理失败：{str(e)}')
+        return ''
 
 
 
@@ -233,7 +247,7 @@ if __name__ == "__main__":
         content += f"{profile}今日科研通签到:\n{result.get('msg', '')}\n"
 
         if result.get('code') == 0:
-            content += f"{result['data']['today_history']}\n"
+            content += extract_chinese(f"{result['data']['today_history']}")+ "\n"
         else:
             print("签到失败")
 
