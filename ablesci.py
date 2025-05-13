@@ -213,16 +213,19 @@ def generate_user_agent(platform: str) -> str:
         return 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36'
 
 def extract_chinese(html_content: str) -> str:
-    try:
-        # 复用ablesci.py中的HTML清洗正则表达式
-        clean_text = re.sub(r'<[^>]+>', '', html_content)
+    try:  
+        # 匹配所有<p>标签内容
+        paragraphs = re.findall(r'<(?:p|div)[^>]*>(.*?)</(?:p|div)>', html_content, flags=re.IGNORECASE | re.DOTALL)
         
-        # 匹配中文字符（包含标点）
-        chinese_pattern = re.compile(r'[\u4e00-\u9fa5\d，。！？；：、（）《》【】「」“”‘’—…]+')
-        chinese_text = ''.join(chinese_pattern.findall(clean_text))
-        # 新增替换逻辑
-        chinese_text = re.sub(r'查看完整介绍[，。！？；：、]*', '...', chinese_text)
-        return chinese_text
+        # 对每个段落单独处理
+        chinese_pattern = re.compile(r'[\u4e00-\u9fa5\d，。！？；：、（）《》【】「」“”‘’—…a-zA-Z.]+')
+        cleaned_paragraphs = [
+            ''.join(chinese_pattern.findall(re.sub(r'<[^>]+>', '', p)))
+            for p in paragraphs
+        ]
+        
+        # 用换行符连接有效段落
+        return '\n'.join([p for p in cleaned_paragraphs if p])
     
     except Exception as e:
         print(f'处理失败：{str(e)}')
