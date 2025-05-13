@@ -2,23 +2,22 @@
 # cron:40 7,21 * * *
 # new Env("科研通签到")
 # coding=utf-8
-import requests
-from requests.adapters import HTTPAdapter
-from urllib3.util.retry import Retry
+# 标准库导入
 import os
 import re
 import random
 import time
 import datetime
-import json
-from typing import Optional, Dict, Any, List, Iterator
+from typing import Dict, Any, Iterator
 
+# 第三方库导入
 import requests
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
 from cachetools import cached, TTLCache
 
-from sendNotify import send
+# 本地模块导入
+from sendNotify import send  # 消息通知模块
 
 
 def generate_interval() -> float:
@@ -134,7 +133,6 @@ def cookies() -> Iterator[str]:
     - 使用正则表达式r'^(cookie\\d+=)?(.+?)$'匹配带前缀和不带前缀的cookie
     - 无效条目会记录warning级别日志
     """
-    import re
     cookie_env = os.environ.get('ABLESCICOOKIE', '')
     if not cookie_env.strip():
         print("\033[31m[严重错误] 环境变量ABLESCICOOKIE未设置或为空！\033[0m")
