@@ -218,7 +218,7 @@ def extract_chinese(html_content: str) -> str:
         clean_text = re.sub(r'<[^>]+>', '', html_content)
         
         # 匹配中文字符（包含标点）
-        chinese_pattern = re.compile(r'[\u4e00-\u9fa5，。！？；：、（）《》【】「」“”‘’—…]+')
+        chinese_pattern = re.compile(r'[\u4e00-\u9fa5\d，。！？；：、（）《》【】「」“”‘’—…]+')
         chinese_text = ''.join(chinese_pattern.findall(clean_text))
         # 新增替换逻辑
         chinese_text = re.sub(r'查看完整介绍[，。！？；：、]*', '...', chinese_text)
