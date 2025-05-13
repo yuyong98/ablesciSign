@@ -93,21 +93,6 @@ def ablesci(cookie: str) -> Dict[str, Any]:
         response = session.get(url, headers=get_headers(cookie), timeout=10)
         response.raise_for_status()
         print("成功访问签到接口")
-        
-        # 保存响应到本地
-        try:
-            timestamp = datetime.datetime.now().strftime('%Y%m%d_%H%M%S')
-            date_dir = datetime.datetime.now().strftime('%Y%m%d')
-            log_dir = os.path.join('logs', date_dir)
-            os.makedirs(log_dir, exist_ok=True)
-            
-            file_path = os.path.join(log_dir, f'{timestamp}.txt')
-            with open(file_path, 'w', encoding='utf-8') as f:
-                json.dump(response.json(), f, indent=2, ensure_ascii=False)
-                print(f'响应已保存至：{file_path}')
-        except Exception as e:
-            print(f'文件保存失败：{str(e)}')
-        
         return response.json()
     except requests.exceptions.RequestException as e:
         print(f"请求失败: {str(e)}")
