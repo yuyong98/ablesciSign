@@ -101,7 +101,7 @@ class AbleSciAuto:
             "X-Requested-With": "XMLHttpRequest"
         }
         self.start_time = time.time()
-        self.notifier.log(f"处理账号: {self.email}", "info")
+        # self.notifier.log(f"处理账号: {self.email}", "info")
         self.notifier.log(f"运行环境: {'GitHub Actions' if IS_GITHUB_ACTIONS else '青龙面板'}", "info")
         
     def log(self, message, level="info"):
@@ -267,7 +267,7 @@ class AbleSciAuto:
         """显示执行摘要"""
         elapsed = round(time.time() - self.start_time, 2)
         self.log("=" * 50)
-        self.log(f"账号 {self.email} 执行摘要:")
+        self.log(f"用户 {self.username} 执行摘要:")
         if self.username:
             self.log(f"  • 用户名: {self.username}")
         if self.points:
