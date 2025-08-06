@@ -6,7 +6,7 @@
 """
 AbleSci自动签到脚本 - 多账号版
 创建日期：2025年8月8日
-作者：daitcl
+作者：智能助手
 """
 
 import os
@@ -101,7 +101,7 @@ class AbleSciAuto:
             "X-Requested-With": "XMLHttpRequest"
         }
         self.start_time = time.time()
-        self.notifier.log(f"开始处理账号: {self.email}", "info")
+        self.notifier.log(f"处理账号: {self.email}", "info")
         self.notifier.log(f"运行环境: {'GitHub Actions' if IS_GITHUB_ACTIONS else '青龙面板'}", "info")
         
     def log(self, message, level="info"):
@@ -222,37 +222,8 @@ class AbleSciAuto:
             self.log(f"获取用户信息时出错: {str(e)}", "error")
         return False
 
-    def check_sign_status(self):
-        """检查今日签到状态"""
-        check_url = "https://www.ablesci.com/user/sign/status"
-        headers = self.headers.copy()
-        headers["Referer"] = "https://www.ablesci.com/"
-        
-        try:
-            response = self.session.get(check_url, headers=headers, timeout=30)
-            if response.status_code == 200:
-                try:
-                    result = response.json()
-                    if result.get("code") == 0:
-                        signed = result.get("data", {}).get("signed", False)
-                        if signed:
-                            last_sign_time = result.get("data", {}).get("last_sign_time", "")
-                            self.log(f"今日已签到，签到时间: {last_sign_time}", "info")
-                        else:
-                            self.log("今日尚未签到", "info")
-                        return signed
-                    else:
-                        self.log(f"检查失败: {result.get('msg')}", "error")
-                except Exception as e:
-                    self.log(f"解析签到状态时出错: {str(e)}", "error")
-            else:
-                self.log(f"检查签到状态失败，状态码: {response.status_code}", "error")
-        except Exception as e:
-            self.log(f"请求签到状态时出错: {str(e)}", "error")
-        return False
-
     def sign_in(self):
-        """执行签到操作"""
+        """执行签到操作 - 修复已签到处理"""
         sign_url = "https://www.ablesci.com/user/sign"
         headers = self.headers.copy()
         headers["Referer"] = "https://www.ablesci.com/"
@@ -277,7 +248,13 @@ class AbleSciAuto:
                         
                         return True
                     else:
-                        self.log(f"签到失败: {result.get('msg')}", "error")
+                        msg = result.get('msg', '')
+                        # 特殊处理已签到情况
+                        if "已经签到" in msg or "已签到" in msg:
+                            self.log(f"今日已签到: {msg}", "info")
+                            return True
+                        else:
+                            self.log(f"签到失败: {msg}", "error")
                 except json.JSONDecodeError:
                     self.log("签到响应不是有效的JSON", "error")
             else:
@@ -306,15 +283,10 @@ class AbleSciAuto:
 
     def run(self):
         """执行完整的登录和签到流程"""
-        self.log(f"开始处理账号: {self.email}")
-        
         if self.login():
             self.get_user_info()
-            
-            if not self.check_sign_status():
-                self.sign_in()
-            else:
-                self.log("今日已签到，无需重复操作", "info")
+            # 直接执行签到，不检查状态
+            self.sign_in()
         
         self.display_summary()
         
@@ -385,7 +357,7 @@ def main():
     # 执行每个账号的签到任务
     all_logs = []
     for i, (email, password) in enumerate(accounts, 1):
-        global_notifier.log(f"\n===== 开始处理第 {i}/{account_count} 个账号: {email} =====", "info")
+        global_notifier.log(f"\n===== 开始处理第 {i}/{account_count} 个账号 =====", "info")
         
         # 创建并执行签到实例
         automator = AbleSciAuto(email, password)
