@@ -6,7 +6,7 @@
 """
 AbleSci自动签到脚本 - 多账号版
 创建日期：2025年8月8日
-作者：智能助手
+作者：daitcl
 """
 
 import os
@@ -141,7 +141,7 @@ class AbleSciAuto:
             "_csrf": csrf_token,
             "email": self.email,
             "password": self.password,
-            "remember": "on"
+            "remember": "off"
         }
         
         headers = self.headers.copy()
