@@ -1,4 +1,4 @@
-# AbleSci 自动签到脚本
+# 科研通自动签到脚本
 
 ![GitHub last commit](https://img.shields.io/github/last-commit/daitcl/ablesciSign)
 ![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/daitcl/ablesciSign/ablesciSign.yml)
@@ -25,7 +25,6 @@
         - 3.2.1 [Server酱（SCKEY）](#321-server酱sckey)
         - 3.2.2 [息知（XZKEY）](#322-息知xzkey)
         - 3.2.3 [PushPlus（PUSH_PLUS_TOKEN）](#323-pushpluspush_plus_token)
-    - 3.3 [其他通知服务配置](#33-其他通知服务配置)
 4. [定时任务说明](#4-定时任务说明)
 5. [常见问题](#5-常见问题)
     - 5.1 [为什么签到失败？](#51-为什么签到失败)
@@ -76,9 +75,12 @@
      - 名称：`PUSH_PLUS_TOKEN`，值：您的PushPlus Token
 
 **账号格式示例**：
+
+```bash
 user1@example.com:password1
 user2@example.com:password2
 user3@example.com:password3
+```
 
 #### 2.1.3 安装依赖
 在青龙面板的依赖管理中添加以下依赖：
@@ -106,12 +108,17 @@ user3@example.com:password3
      - Name: `PUSH_PLUS_TOKEN`，Value: 您的PushPlus Token
 
 **账号格式示例**：
+
+```bash
 user1@example.com:password1
 user2@example.com:password2
 user3@example.com:password3
+```
+
+
 
 ![添加Secrets](./img/image-20240926213937401.png)
-![Secrets配置](./img/Snipaste_2025-08-07_03-07-06.png)
+![image-20250807033325755](./img/image-20250807033325755.png)
 
 #### 2.2.3 启用工作流
 1. 在您的仓库页面，点击 "Actions"
@@ -169,17 +176,6 @@ user3@example.com:password3
 4. 复制"Token"值（即PUSH_PLUS_TOKEN）
 5. 在环境变量中设置为 `PUSH_PLUS_TOKEN`
 
-### 3.3 其他通知服务配置
-脚本还支持以下通知服务：
-
-| 服务名称       | 环境变量                               | 获取地址                                        | 说明                 |
-| -------------- | -------------------------------------- | ----------------------------------------------- | -------------------- |
-| Telegram机器人 | `TG_BOT_TOKEN`, `TG_USER_ID`           | [BotFather](https://t.me/BotFather)             | 创建机器人获取Token  |
-| 企业微信应用   | `QYWX_AM`                              | [企业微信管理后台](https://work.weixin.qq.com/) | 需创建企业微信应用   |
-| 企业微信机器人 | `QYWX_KEY`                             | [企业微信管理后台](https://work.weixin.qq.com/) | 创建群机器人获取Key  |
-| 钉钉机器人     | `DD_BOT_ACCESS_TOKEN`, `DD_BOT_SECRET` | [钉钉开放平台](https://open.dingtalk.com/)      | 创建群机器人获取凭证 |
-| QQ机器人       | `QQ_SKEY`, `QQ_MODE`                   | [Qmsg酱](https://qmsg.zendee.cn/)               | 注册Qmsg酱获取SKEY   |
-
 ---
 
 ## 4. 定时任务说明
@@ -232,5 +228,5 @@ user3@example.com:password3
 ---
 
 ## 8. 赞赏
-感觉不错的请我喝瓶快乐水 😁  
+请我一杯咖啡吧！
 ![赞赏码](./img/skm.jpg)
