@@ -229,8 +229,7 @@ user3@example.com:password3
 ---
 
 ## 8. 赞赏
+
 请我一杯咖啡吧！
+
 ![赞赏码](./img/skm.jpg)
-=======
-![skm](./img/1.png)
->>>>>>> 3cd64b17c01627c9226f70187949fe705650684c
