@@ -1,31 +1,43 @@
-
-name: ablesci-checkin
+name: AbleSci Auto Sign
 
 on:
-  workflow_dispatch: #手动执行
+  workflow_dispatch: # 手动触发
   schedule:          # 定时任务
-    - cron: '40 13,23 * * *' #每日7点40,21点40，两个时间点执行任务
+    - cron: '40 13,23 * * *' # UTC时间13:40和23:40（北京时间21:40和次日7:40）
+
 jobs:
-  checkin:
-    runs-on: ubuntu-22.04
+  sign:
+    runs-on: ubuntu-latest
     steps:
-    - name: Checkout
-      uses: actions/checkout@main
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-    - name: Initialize Python environment
-      uses: actions/setup-python@v5
-      with:
-        python-version: '3.10'
-        cache: 'pip' # caching pip dependencies
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+          cache: 'pip'
 
-    - name: Install requirements
-      run: |
-        python -m pip install --upgrade pip
-        pip install -r ./requirements.txt
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install requests beautifulsoup4
 
-    - name: Checkin
-      run: |
-        python3 ./ablesci.py    #要执行的py代码
-      env: #设置secrets的环境变量
-        ABLESCICOOKIE: ${{ secrets.ABLESCICOOKIE }}
-        XZKEY: ${{ secrets.XZKEY }}  # 息知的XZKEY; secrets可填
+      - name: Run AbleSci Sign
+        id: sign
+        run: |
+          python ablesci.py > output.log
+          echo "LOG_CONTENT<<EOF" >> $GITHUB_OUTPUT
+          cat output.log >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+        env:
+          GITHUB_ACTIONS: true
+          ABLESCI_ACCOUNTS: ${{ secrets.ABLESCI_ACCOUNTS }}
+          # 选择一种通知服务（三选一）
+          SCKEY: ${{ secrets.SCKEY }}          # Server酱
+          XZKEY: ${{ secrets.XZKEY }}          # 息知
+          PUSH_PLUS_TOKEN: ${{ secrets.PUSH_PLUS_TOKEN }}  # PushPlus
+
+      - name: Display Log
+        run: |
+          echo "${{ steps.sign.outputs.LOG_CONTENT }}"
