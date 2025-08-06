@@ -117,6 +117,7 @@ user3@example.com:password3
 
 
 
+<<<<<<< HEAD
 ![添加Secrets](./img/image-20240926213937401.png)
 ![image-20250807033325755](./img/image-20250807033325755.png)
 
@@ -230,3 +231,6 @@ user3@example.com:password3
 ## 8. 赞赏
 请我一杯咖啡吧！
 ![赞赏码](./img/skm.jpg)
+=======
+![skm](./img/1.png)
+>>>>>>> 3cd64b17c01627c9226f70187949fe705650684c
