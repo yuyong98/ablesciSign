@@ -7,6 +7,7 @@
 AbleSci自动签到脚本 
 创建日期：2025年8月8日
 更新日期：2025年9月2日 >> 修复日志输出时间为北京时间 ; 修复签到前后用户信息显示 ; 优化登录失败处理 ; 优化签到已签到处理
+更新日期：2025年9月3日 >> 保护隐私，不在日志中显示完整邮箱和用户名
 作者：daitcl
 """
 
@@ -24,6 +25,27 @@ IS_QINGLONG = not IS_GITHUB_ACTIONS
 
 # 设置环境变量名称
 ENV_ACCOUNTS = "ABLESCI_ACCOUNTS" 
+
+# 隐私保护函数
+def protect_privacy(text):
+    """保护隐私信息，隐藏部分邮箱和用户名"""
+    if not text:
+        return text
+        
+    # 邮箱隐私处理
+    if "@" in text:
+        parts = text.split("@")
+        if len(parts[0]) > 2:
+            protected_local = parts[0][:2] + "***"
+        else:
+            protected_local = "***"
+        return f"{protected_local}@{parts[1]}"
+    
+    # 用户名隐私处理
+    if len(text) > 2:
+        return text[:2] + "***"
+    else:
+        return "***"
 
 # 消息通知系统
 class Notifier:
@@ -107,7 +129,9 @@ class AbleSciAuto:
             "X-Requested-With": "XMLHttpRequest"
         }
         self.start_time = time.time()
-        self.notifier.log(f"处理账号: {self.email}", "info")
+        # 使用隐私保护函数处理邮箱显示
+        protected_email = protect_privacy(self.email)
+        self.notifier.log(f"处理账号: {protected_email}", "info")
         
     def log(self, message, level="info"):
         """代理日志到通知系统"""
@@ -200,7 +224,9 @@ class AbleSciAuto:
                 username_element = soup.select_one('.mobile-hide.able-head-user-vip-username')
                 if username_element:
                     self.username = username_element.text.strip()
-                    self.log(f"用户名: {self.username}", "info")
+                    # 使用隐私保护函数处理用户名显示
+                    protected_username = protect_privacy(self.username)
+                    self.log(f"用户名: {protected_username}", "info")
                 else:
                     self.log("无法定位用户名元素", "warning")
                 
@@ -273,9 +299,11 @@ class AbleSciAuto:
         elapsed = round(time.time() - self.start_time, 2)
         title = "签到前信息" if is_before_sign else "签到后信息"
         self.log("=" * 50)
-        self.log(f"用户 {self.username} {title}:")
+        self.log(f"用户 {protect_privacy(self.username)} {title}:")
         if self.username:
-            self.log(f"  • 用户名: {self.username}")
+            # 使用隐私保护函数处理用户名显示
+            protected_username = protect_privacy(self.username)
+            self.log(f"  • 用户名: {protected_username}")
         if self.points:
             self.log(f"  • 当前积分: {self.points}")
         if self.sign_days:
