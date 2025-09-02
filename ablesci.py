@@ -4,8 +4,9 @@
 # coding=utf-8
 
 """
-AbleSci自动签到脚本 - 多账号版
+AbleSci自动签到脚本 
 创建日期：2025年8月8日
+更新日期：2025年9月2日 >> 修复日志输出时间为北京时间 ; 修复签到前后用户信息显示 ; 优化登录失败处理 ; 优化签到已签到处理
 作者：daitcl
 """
 
@@ -15,13 +16,14 @@ import time
 import requests
 from bs4 import BeautifulSoup
 import json
+import datetime
 
 # 检测运行环境
 IS_GITHUB_ACTIONS = os.getenv("GITHUB_ACTIONS") == "true"
 IS_QINGLONG = not IS_GITHUB_ACTIONS
 
 # 设置环境变量名称
-ENV_ACCOUNTS = "ABLESCI_ACCOUNTS"  # 多账号环境变量
+ENV_ACCOUNTS = "ABLESCI_ACCOUNTS" 
 
 # 消息通知系统
 class Notifier:
@@ -51,8 +53,12 @@ class Notifier:
                 self.notify_enabled = False
     
     def log(self, message, level="info"):
-        """格式化日志输出并保存到内容"""
-        timestamp = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
+        """格式化日志输出并保存到内容 - 使用北京时间"""
+        # 获取UTC时间并转换为北京时间 (UTC+8)
+        utc_now = datetime.datetime.utcnow()
+        beijing_time = utc_now + datetime.timedelta(hours=8)
+        timestamp = beijing_time.strftime("%Y-%m-%d %H:%M:%S")
+        
         level_map = {
             "info": "ℹ️",
             "success": "✅",
@@ -101,8 +107,7 @@ class AbleSciAuto:
             "X-Requested-With": "XMLHttpRequest"
         }
         self.start_time = time.time()
-        # self.notifier.log(f"处理账号: {self.email}", "info")
-        self.notifier.log(f"运行环境: {'GitHub Actions' if IS_GITHUB_ACTIONS else '青龙面板'}", "info")
+        self.notifier.log(f"处理账号: {self.email}", "info")
         
     def log(self, message, level="info"):
         """代理日志到通知系统"""
@@ -263,11 +268,12 @@ class AbleSciAuto:
             self.log(f"签到过程中出错: {str(e)}", "error")
         return False
 
-    def display_summary(self):
+    def display_summary(self, is_before_sign=False):
         """显示执行摘要"""
         elapsed = round(time.time() - self.start_time, 2)
+        title = "签到前信息" if is_before_sign else "签到后信息"
         self.log("=" * 50)
-        self.log(f"用户 {self.username} 执行摘要:")
+        self.log(f"用户 {self.username} {title}:")
         if self.username:
             self.log(f"  • 用户名: {self.username}")
         if self.points:
@@ -279,16 +285,23 @@ class AbleSciAuto:
         
         # 添加额外空行
         self.log("")
-        self.log("")
 
     def run(self):
         """执行完整的登录和签到流程"""
         if self.login():
+            # 登录成功后获取并显示用户信息
             self.get_user_info()
-            # 直接执行签到，不检查状态
-            self.sign_in()
-        
-        self.display_summary()
+            self.display_summary(is_before_sign=True)
+            
+            # 执行签到
+            sign_result = self.sign_in()
+            
+            # 签到后刷新页面并再次获取用户信息
+            if sign_result:
+                self.log("签到完成，刷新用户信息...", "info")
+                time.sleep(2)  # 等待2秒让服务器处理
+                self.get_user_info()
+                self.display_summary(is_before_sign=False)
         
         # 返回日志内容，供主程序汇总
         return self.notifier.get_content()
